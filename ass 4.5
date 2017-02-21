@@ -1,0 +1,41 @@
+ Explain what is checksum and the importance of checksum and how hadoop performs checksum
+           *Checksum is a small data from a digital data taken for the purpose of detecting errors which may have occured during transmission or storage.
+           *It provides data integrity but not data authenticity.
+           *Tranmissions always causes errors such as missing of files or duplication.So the data received is not credible
+           *Thus,Checksum is deployed to detect such errors.
+           *The transmitter calculates checksum along with the file to be transmitted.after the transmission,the checksum of the received data is checked.
+           *IF the calculated checksum and the received checksum is same,then there are no errors.
+           *In Hadoop,the client software calculates the checksum of the HDFS files and stores it in a separate hidden file in same HDFS namespace.
+           *When client receives the contents from the file,it checks the data stored in each datanode to the calculated checksum
+           *If not same,then the client retrieves the data from another datanode that has the replica.
+           *If the checksum of another data node matches with checksum of hidden file,then these data will be served to client.
+           
+           
+ Explain the anatomy of file write to HDFS:
+           * An instance of object of distributed file system is grabbed.
+           * A new file in a filesystem is created by doing a remote procedure call to namenode.
+           *Various checks are performed i.e) client's permission to create a file or not and also file should not exists earlier.
+           *The above exceptions causes it will throw an IOException.
+           *Once registration of file is done,the client gets an object i.e) FSDataOutputStream wh8ich helps the client to write the data.
+           *DFSoutputStream helps in communication  between namenode and datanodes.
+           *DFSOutputStream splits into packets when client writes data and a data queue is maintained
+           *Data Streamer consumes data queue which asks namenode to allocate new blocks.
+           *The datanodes list forms a pipeline and assuming a replication factor of two,so there will be two nodes in the pipeline.
+           *Data streamer streams the packets to first node and stores and then forwards to second node and it goes on.
+           *When the datanode in pipeline acknowledges the packet,the packet will be removed from the acknowledgement queue.
+           
+           
+          
+Explain how HDFS handles failures during file write:
+          *When the file write fails,first the pipeline is closed and the packets in the acknowledge queue are added to the data queue
+          *This is done so the datanodes will not miss any packets.
+          *The current block on the error free datanods is given a new ID,and it is communicated to name node so that the failed datanode will be removed from pipeline.
+          *Under replication of the blocks is noted by the namenode,and further replica is created on another node
+          *It’s possible, but unlikely, that multiple datanodes fail while a block is being written.
+          *As long as dfs.replication.min replicas are written, the write will succeed, and the block will be asynchronously replicated across the cluster until its target replication factor is reached
+          
+          
+          
+          
+          
+       
